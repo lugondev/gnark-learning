@@ -1,0 +1,17 @@
+package main
+
+import (
+	"encoding/json"
+	"gnark-bid/zk"
+)
+
+func ReadJsonVPKey() (*zk.VPKey, error) {
+	jsonData := []byte(`{{.}}`)
+	var vpKey *zk.VPKey
+	err := json.Unmarshal(jsonData, &vpKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return vpKey, nil
+}

@@ -1,11 +1,9 @@
-SHELL=/bin/bash
+.PHONY: build clean-abi-generated solc abigen
 
-.PHONY: generator-sol clean-abi-generated solc abigen
+all: build abigen go-test
 
-all: generator-sol abigen go-test
-
-generator-sol:
-	cd solidity && go run contract/main.go
+build:
+	go run zk/build/main.go
 
 clean-abi-generated:
 	cd solidity && rm -fr ./abi/*
@@ -16,5 +14,12 @@ solc: clean-abi-generated
 abigen: solc
 	cd solidity && abigen --bin ./abi/Verifier.bin --abi abi/Verifier.abi --pkg solidity --out solidity_groth16.go --type Verifier
 
-go-test:
+go-test: abigen
 	cd solidity && go test
+
+remixd:
+	remixd -s ./ -u https://remix.ethereum.org
+
+build-wasm:
+	cd wasm && GOOS=js GOARCH=wasm go build -o  ../assets/json.wasm
+
