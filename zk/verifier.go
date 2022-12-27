@@ -29,7 +29,7 @@ func NewGnarkGroth16(key *VPKey) (*GnarkGroth16, error) {
 
 func (t *GnarkGroth16) setup(vpKey *VPKey) error {
 	var err error
-	t.r1cs, err = frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &t.circuit)
+	t.r1cs, err = frontend.Compile(ecc.BN254, r1cs.NewBuilder, &t.circuit)
 	if err != nil {
 		log.Println(err, "compiling R1CS failed")
 		return err
@@ -60,9 +60,9 @@ func (t *GnarkGroth16) setup(vpKey *VPKey) error {
 	return nil
 }
 
-func (t *GnarkGroth16) GenerateProof(assignment Circuit, input [2]*big.Int) (*Proof, error) {
+func (t *GnarkGroth16) GenerateProof(assignment Circuit, input [1]*big.Int) (*Proof, error) {
 	// witness creation
-	witness, err := frontend.NewWitness(&assignment, ecc.BN254.ScalarField())
+	witness, err := frontend.NewWitness(&assignment, ecc.BN254)
 	if err != nil {
 		return nil, err
 	}

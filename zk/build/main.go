@@ -26,7 +26,7 @@ func main() {
 func generateGroth16() error {
 	var circuit zk.Circuit
 
-	r1csCompiled, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &circuit)
+	r1csCompiled, err := frontend.Compile(ecc.BN254, r1cs.NewBuilder, &circuit)
 	if err != nil {
 		return err
 	}

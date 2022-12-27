@@ -20,7 +20,8 @@ func hash() js.Func {
 		fmt.Println("args", args)
 
 		if err := validation.Var(args[0].String(), "required,hexadecimal"); err != nil {
-			return "{'error': 'Invalid argument passed'}"
+			//return "{'error': 'Invalid argument input passed'}"
+			return fmt.Sprintf("{'error': '%s'}", err.Error())
 		}
 
 		value := common.FromHex(args[0].String())
@@ -30,7 +31,7 @@ func hash() js.Func {
 
 func proof() js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) any {
-		if len(args) != 2 {
+		if len(args) != 1 {
 			return "{'error': 'Invalid no of arguments passed'}"
 		}
 		if err := validation.Var(args[0].String(), "required,hexadecimal"); err != nil {
@@ -38,7 +39,19 @@ func proof() js.Func {
 			return fmt.Sprintf("{'error': '%s'}", err.Error())
 		}
 
-		isReveal := args[1].Bool()
+		inputBytes := common.FromHex(args[0].String())
+		privateValue := new(big.Int).SetBytes(inputBytes)
+		fmt.Println("privateValue", privateValue.String())
+		assignment := zk.Circuit{
+			PrivateValue: privateValue.String(),
+			Hash:         zk.HashMIMC(inputBytes).String(),
+		}
+
+		if err := validation.Var(args[0].String(), "required,hexadecimal"); err != nil {
+			//return "{'error': 'Invalid argument input passed'}"
+			return fmt.Sprintf("{'error': '%s'}", err.Error())
+		}
+
 		vkKey, err := ReadJsonVPKey()
 		if err != nil {
 			return fmt.Sprintf("{'error': '%s'}", err.Error())
@@ -48,23 +61,7 @@ func proof() js.Func {
 		if err != nil {
 			return fmt.Sprintf("{'error': '%s'}", err.Error())
 		}
-		inputBytes := common.FromHex(args[0].String())
-		inputValue := new(big.Int).SetBytes(inputBytes)
-		privateValue := big.NewInt(0)
-		if isReveal {
-			privateValue = inputValue
-		}
-		assignment := zk.Circuit{
-			PrivateValue: privateValue,
-			PublicValue:  inputValue,
-			Hash:         zk.HashMIMC(inputBytes),
-		}
-
-		if err := validation.Var(args[0].String(), "required,hexadecimal"); err != nil {
-			//return "{'error': 'Invalid argument input passed'}"
-			return fmt.Sprintf("{'error': '%s'}", err.Error())
-		}
-		inputProof := [2]*big.Int{privateValue, zk.HashMIMC(inputBytes)}
+		inputProof := [1]*big.Int{zk.HashMIMC(inputBytes)}
 		proofGenerated, err := g16.GenerateProof(assignment, inputProof)
 		if err != nil {
 			return fmt.Sprintf("{'error': '%s'}", err.Error())
